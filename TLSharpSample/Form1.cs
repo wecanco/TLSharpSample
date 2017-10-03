@@ -343,5 +343,14 @@ namespace TLSharpSample
             MessageBox.Show("با کمک حداقلی،نقشی در توسعه این کتابخانه داشته باشید. کمک شما امیدی برای توسعه است.");
             System.Diagnostics.Process.Start("http://wecan-co.ir/payment");
         }
+
+        private void AddReply_Click(object sender, EventArgs e)
+        {
+            if (ReplyText.Text.Trim() !="")
+            {
+                ReplisBox.Items.Add(ReplyText.Text+"#");
+                ReplyText.Text = "";
+            }
+        }
     }
 }

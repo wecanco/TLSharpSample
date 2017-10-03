@@ -42,6 +42,8 @@
             this.ErrorsBox = new System.Windows.Forms.ListBox();
             this.ReplisBox = new System.Windows.Forms.ListBox();
             this.donate = new System.Windows.Forms.LinkLabel();
+            this.AddReply = new System.Windows.Forms.Button();
+            this.ReplyText = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // GHash
@@ -170,7 +172,7 @@
             "/wecan#I LOVE HE 💝"});
             this.ReplisBox.Location = new System.Drawing.Point(12, 265);
             this.ReplisBox.Name = "ReplisBox";
-            this.ReplisBox.Size = new System.Drawing.Size(281, 160);
+            this.ReplisBox.Size = new System.Drawing.Size(281, 134);
             this.ReplisBox.TabIndex = 13;
             // 
             // donate
@@ -184,11 +186,33 @@
             this.donate.Text = "حمایت مالی";
             this.donate.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.donate_LinkClicked);
             // 
+            // AddReply
+            // 
+            this.AddReply.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.AddReply.Location = new System.Drawing.Point(12, 402);
+            this.AddReply.Name = "AddReply";
+            this.AddReply.Size = new System.Drawing.Size(47, 23);
+            this.AddReply.TabIndex = 15;
+            this.AddReply.Text = "افزودن";
+            this.AddReply.UseVisualStyleBackColor = true;
+            this.AddReply.Click += new System.EventHandler(this.AddReply_Click);
+            // 
+            // ReplyText
+            // 
+            this.ReplyText.Location = new System.Drawing.Point(65, 404);
+            this.ReplyText.Name = "ReplyText";
+            this.ReplyText.Size = new System.Drawing.Size(228, 21);
+            this.ReplyText.TabIndex = 16;
+            this.ReplyText.Text = "دستور#پاسخ";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(300, 534);
+            this.Controls.Add(this.ReplyText);
+            this.Controls.Add(this.AddReply);
             this.Controls.Add(this.donate);
             this.Controls.Add(this.ReplisBox);
             this.Controls.Add(this.ErrorsBox);
@@ -229,6 +253,8 @@
         private System.Windows.Forms.ListBox ErrorsBox;
         private System.Windows.Forms.ListBox ReplisBox;
         private System.Windows.Forms.LinkLabel donate;
+        private System.Windows.Forms.Button AddReply;
+        private System.Windows.Forms.TextBox ReplyText;
     }
 }
 
