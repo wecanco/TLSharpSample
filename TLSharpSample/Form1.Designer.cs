@@ -174,6 +174,7 @@
             this.ReplisBox.Name = "ReplisBox";
             this.ReplisBox.Size = new System.Drawing.Size(281, 134);
             this.ReplisBox.TabIndex = 13;
+            this.ReplisBox.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.ReplisBox_MouseDoubleClick);
             // 
             // donate
             // 

@@ -352,5 +352,13 @@ namespace TLSharpSample
                 ReplyText.Text = "";
             }
         }
+
+        private void ReplisBox_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            if(ReplisBox.SelectedIndex >= 0)
+            {
+                ReplisBox.Items.RemoveAt(ReplisBox.SelectedIndex);
+            }
+        }
     }
 }
