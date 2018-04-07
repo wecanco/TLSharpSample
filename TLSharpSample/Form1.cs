@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -33,6 +37,62 @@ namespace TLSharpSample
         bool getupdates = false;
         
         Dictionary<int, long> MyDialogs = null;
+
+ 
+        private TcpClient conectarProxy(string httpProxyHost, int httpProxyPort)
+        {
+            var url = "http://" + httpProxyHost + ":" + httpProxyPort;
+            var proxyUrl = WebRequest.DefaultWebProxy.GetProxy(new Uri(url));
+            WebResponse response = null;
+            var tentativas = 10;
+
+            while (tentativas >= 0)
+            {
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.KeepAlive = true;
+                var webProxy = new WebProxy(proxyUrl);
+                request.Proxy = webProxy;
+                request.Method = "CONNECT";
+                request.Timeout = 3000;
+
+                tentativas--;
+                try
+                {
+                    response = request.GetResponse();
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    if (tentativas >= 0 && ex.Message.Equals("The operation has timed out", StringComparison.InvariantCultureIgnoreCase))
+                    {
+                        Console.WriteLine("Ocorreu timeout ao tentar se conectar pelo proxy.");
+                    }
+                    else
+                    {
+                        throw new Exception("Algo deu errado", ex);
+                    }
+                }
+            }
+            var responseStream = response.GetResponseStream();
+            Debug.Assert(responseStream != null);
+
+            const BindingFlags Flags = BindingFlags.NonPublic | BindingFlags.Instance;
+
+            var rsType = responseStream.GetType();
+            var connectionProperty = rsType.GetProperty("Connection", Flags);
+
+            var connection = connectionProperty.GetValue(responseStream, null);
+            var connectionType = connection.GetType();
+            var networkStreamProperty = connectionType.GetProperty("NetworkStream", Flags);
+
+            var networkStream = networkStreamProperty.GetValue(connection, null);
+            var nsType = networkStream.GetType();
+            var socketProperty = nsType.GetProperty("Socket", Flags);
+            var socket = (Socket)socketProperty.GetValue(networkStream, null);
+
+            return new TcpClient { Client = socket };
+        }
+
         private async void button1_Click(object sender, EventArgs e)
         {
             string grhash = GHash.Text.Trim().Replace("https://t.me/joinchat/", "").Replace("/","");
@@ -40,6 +100,7 @@ namespace TLSharpSample
             RCHI.hash = grhash;
 
             TLUpdates chat = await Client.SendRequestAsync<TLUpdates>(RCHI);
+            
    
         }
 
@@ -48,12 +109,16 @@ namespace TLSharpSample
             MyPhone = phone.Text.Trim().Replace(" ", "");
             if (MyPhone !="") {
                 string sessionName = MyPhone.Replace("+", "_") + ".wecan";
-                Client = new TelegramClient(185606, "c7351fb30842b4abb27c72e5e1680506", store, sessionName);
+                //TcpClient TcpC = conectarProxy("",0);
+
+                TLSharp.Core.Network.TcpClientConnectionHandler TcpHandler = new TLSharp.Core.Network.TcpClientConnectionHandler(conectarProxy);
+                Client = new TelegramClient(185606, "c7351fb30842b4abb27c72e5e1680506", store, sessionName, TcpHandler);
                 await Client.ConnectAsync();
                 if (Client.IsUserAuthorized())
                 {
                     ConnectB.Text = MyPhone+" متصل شد.";
                     ConnectB.BackColor = Color.Green;
+                    //await Task.Delay(4000);
                     await GetDialogs();
                     StopTimer_Click(sender, e);
                 }
@@ -90,21 +155,29 @@ namespace TLSharpSample
 
         private async Task GetDialogs()
         {
-            TLAbsDialogs Dialogs = await Client.GetUserDialogsAsync();
+           // TLAbsDialogs Dialogs = await Client.GetUserDialogsAsync();
+            var peer = new TLInputPeerSelf();
+            var Dialogs = await Client.SendRequestAsync<TLAbsDialogs>(new TLRequestGetDialogs() { offset_date = 0, offset_peer = peer, limit = 1000 });
             TLDialogs Dlogs = Dialogs as TLDialogs;
             int i = 0;
             MyDialogs = new Dictionary<int, long>();
-            foreach (TLUser user in Dlogs.users.lists)
+            if (Dlogs != null)
             {
-                try
+                foreach (TLUser user in Dlogs.users.lists)
                 {
-                    MyDialogs.Add(user.id, (long)user.access_hash);
+                    try
+                    {
+                        MyDialogs.Add(user.id, (long)user.access_hash);
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+                    i++;
                 }
-                catch(Exception ex) {
-                    
-                }
-                i++;
+                
             }
+            DialogsCountL.Text = "کل چت ها: " + i;
 
         }
         private async Task GetMessages()
@@ -309,6 +382,7 @@ namespace TLSharpSample
                 FileInfo info = new FileInfo(file);
                 phone.Items.Add(info.Name.Replace(".wecan.dat", "").Replace("_","+"));
             }
+            
         }
 
 
@@ -360,5 +434,8 @@ namespace TLSharpSample
                 ReplisBox.Items.RemoveAt(ReplisBox.SelectedIndex);
             }
         }
+
+
+
     }
 }
